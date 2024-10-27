@@ -1,0 +1,35 @@
+name: Deploy Backend to Azure
+
+on:
+  push:
+    branches:
+      - main  # Change to your preferred branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install Dependencies
+      working-directory: ./backend
+      run: |
+        npm install
+
+    - name: Zip Backend Folder
+      run: |
+        cd backend && zip -r ../backend.zip .
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: mox-backend  # Your App Service name
+        package: backend.zip
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
