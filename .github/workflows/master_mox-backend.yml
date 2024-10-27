@@ -57,6 +57,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'mox-backend'
-          slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_47F11AD565614E04AE5E5463F941A1D2 }}
