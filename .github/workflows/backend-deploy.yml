@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  NODE_VERSION: '18'  # Ensure this matches your local environment
+  AZURE_WEBAPP_NAME: mox-backend  # Replace with your Azure App name
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -16,21 +20,39 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'  # Ensure this matches your local environment
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Debug directory structure
+      run: |
+        pwd
+        ls -R
 
     - name: Install Dependencies
       working-directory: ./backend
       run: |
         npm install --verbose  # This provides detailed output
 
+    - name: Build Backend (if necessary)
+      working-directory: ./backend
+      run: |
+        npm run build --if-present
+
     - name: Zip Backend Folder
       run: |
         cd backend
         zip -r ../backend.zip . || echo "Zipping failed"  # Capture zipping issues
+      
+    - name: List zip contents
+      run: unzip -l backend.zip
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
       with:
-        app-name: mox-backend  # Replace with your Azure App name
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: backend.zip
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+    - name: Post-deployment debug
+      run: |
+        echo "Deployment completed. Check Azure portal for more details."
+        echo "If issues persist, verify the app's startup command and environment variables in Azure."
